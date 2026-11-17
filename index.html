@@ -137,7 +137,7 @@ footer{text-align:center;font-size:11px;color:var(--gris);padding:18px;border-to
 <footer id='pie'></footer>
 <script>
 // ===== DATOS DEL CIERRE (generados desde Excel) =====
-const G={mes:'2026-10',ver:'V15',est:30,ipc:0.03,desc:0,vig:1,senaModo:'Porcentaje',senaNum:10,senaPct:0,senaDesc:0.25,pracEst:0,pracPer:0};
+const G={mes:'2026-10',ver:'V15',est:30,ipc:0.03,desc:0,vig:1,senaModo:'Porcentaje',senaNum:10,senaPct:0,senaDesc:0.25,pracEst:0,pracPer:0};const DEF=['Universitario','Presencial','Sede Bogotá','ENGATIVA PRESENCIAL','Psicología','54933'];
 const P=[
 ['Universitario','Presencial','Sede Bogotá','ENGATIVA PRESENCIAL','Licenciatura en Filosofía','2049',3324900,0.0513098138,9,2737909.29934659,13849807.5889298,9803280.62620684,1,[0.1818181818,0.1111111111,0,0,0,0.125,0.2857142857,0.2,0],-149889356.152961],
 ['Universitario','Presencial','Sede Bogotá','ENGATIVA PRESENCIAL','Administración de Empresas','2051',5274600,0.3437417055,9,1680340.50615834,13849807.5889298,9803280.62620684,1,[0.2783018868,0.1633986928,0.078125,0.093220339,0.0934579439,0.0206185567,0.0105263158,0,0.0425531915],48229055.5804434],
@@ -937,7 +937,7 @@ Array.of('fNivel','fMod','fSede','fSem','fMet','fOrd').forEach(k=>$(k).onchange=
 $('resetG').onclick=()=>{resetG();refresh();};$('resetP').onclick=()=>{loadP(cur);render();};
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.t));$('senaModo').addEventListener('change',modoSENA);
 $('rk').onclick=e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;selectProg(PR[+tr.dataset.i]);show('vDet');window.scrollTo(0,0);};
-cascade(0);
+const dp=DEF&&PR.find(p=>F.every((k,i)=>String(p[k])===DEF[i]));if(dp)selectProg(dp);else cascade(0);
 </script>
 </body>
 </html>
