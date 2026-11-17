@@ -99,7 +99,7 @@ footer{text-align:center;font-size:11px;color:var(--gris);padding:18px;border-to
 <label>% descuento<input id='senaDesc' type='number' min='0' max='100' step='1'></label></fieldset>
 <fieldset><legend>Cohorte y descuentos</legend><label>Estudiantes iniciales<input id='est' type='number' min='1' step='1'></label>
 <label>Descuento adicional %<input id='desc' type='number' min='0' max='100' step='1'></label><label>Vigencia (hasta sem.)<input id='vig' type='number' min='1' max='10' step='1'></label></fieldset>
-<fieldset><legend>Prácticas</legend><label>Costo / estudiante (COP)<input id='pracEst' type='number' min='0' step='10000'></label>
+<fieldset><legend>Prácticas</legend><label>Costo / estudiante (COP)<input id='pracEst' type='text' inputmode='numeric' data-cur='1' placeholder='$ 0'></label>
 <label>Semestre (0 = no aplica)<input id='pracPer' type='number' min='0' max='10' step='1'></label></fieldset>
 </div><button id='resetG' class='btn'>↺ Restablecer parámetros del cierre</button></details>
 <div class='tabs'><button class='tab on' data-t='vDet'>📋 Detalle por programa</button><button class='tab' data-t='vRank'>🏆 Ranking de programas</button></div>
@@ -110,7 +110,7 @@ footer{text-align:center;font-size:11px;color:var(--gris);padding:18px;border-to
 <label>Programa<select id='programa'></select></label><label>SNIES<select id='snies'></select></label></div></div>
 <div class='phead' id='phead'></div>
 <details class='panel'><summary>🎓 Ajustar supuestos del programa</summary><div class='grp'>
-<fieldset><legend>Precio y duración</legend><label>Precio MEN / sem (COP)<input id='pre' type='number' min='0' step='1000'></label>
+<fieldset><legend>Precio y duración</legend><label>Precio MEN / sem (COP)<input id='pre' type='text' inputmode='numeric' data-cur='1' placeholder='$ 0'></label>
 <label>% Subsidio<input id='subs' type='number' min='0' max='100' step='0.1'></label><label>Duración (sem, máx. 10)<input id='dur' type='number' min='1' max='10' step='1'></label></fieldset>
 <fieldset class='des' id='desBox'><legend>Deserción por periodo %</legend></fieldset>
 </div><button id='resetP' class='btn'>↺ Restablecer valores del programa</button></details>
@@ -835,10 +835,10 @@ const P=[
 // ===== LÓGICA DEL TABLERO =====
 const PR=P.map((a,i)=>({i:i,nivel:a[0],modalidad:a[1],sede:a[2],cu:a[3],programa:a[4],snies:a[5],pre:a[6],sub:a[7],dur:a[8],cv:a[9],cf:a[10],gf:a[11],dd:a[12],des:a[13],exc:a[14]}));
 const $=id=>document.getElementById(id);
-const COP=v=>v.toLocaleString('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
-const MM=v=>{const s='$'+(Math.abs(v)/1e6).toLocaleString('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1})+' M';return v<0?'('+s+')':s;};
+const COP=v=>{const s=Math.abs(v).toLocaleString('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});return v<0?'('+s+')':s;};
+const MM=v=>{if(Math.abs(v)<50000)return '–';const s='$'+(Math.abs(v)/1e6).toLocaleString('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1})+' M';return v<0?'('+s+')':s;};
 const TDM=v=>'<td'+(v<0?' class=neg':'')+'>'+MM(v)+'</td>';
-const PCT=v=>(v*100).toLocaleString('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+const PCT=v=>(v*100).toLocaleString('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';const N1=v=>v.toLocaleString('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1});
 const SC=m=>m>=0.45?'v':m>=0.35?'a':m>=0.2?'n':'r';
 const COL={v:'#2E9E5B',a:'#F2B705',n:'#E8772E',r:'#D0342C'},LAB={v:'Saludable',a:'Aceptable',n:'En riesgo',r:'Crítico'};
 const PILL=m=>'<span class=p'+SC(m)+'>'+PCT(m)+'</span>';
@@ -865,8 +865,8 @@ rows.push({k:k,stu:stu,ret:k===1?1:ret,precio:precio,ing:ing,cv:cv,fijo:fijo,pra
 const S=f=>rows.reduce((a,r)=>a+r[f],0),I=S('ing'),C=S('costo');
 return {rows:rows,I:I,C:C,E:I-C,M:I?(I-C)/I:0,CV:S('cv'),FI:S('fijo'),PRA:S('prac'),pe:rows.length?rows[0].pe:NaN};
 }
-function setV(id,val,s,dec){const e=$(id),f=Math.pow(10,dec),d=String(Math.round(val*s*f)/f);e.value=d;e.dataset.x=val;e.dataset.d=d;e.dataset.s=s;e.classList.remove('chg');}
-function rd(id){const e=$(id);return e.value===e.dataset.d?+e.dataset.x:(+e.value||0)/(+e.dataset.s||1);}
+const FMTC=n=>'$ '+Math.round(n).toLocaleString('es-CO');function setV(id,val,s,dec){const e=$(id),f=Math.pow(10,dec),d=e.dataset.cur?FMTC(val*s):String(Math.round(val*s*f)/f);e.value=d;e.dataset.x=val;e.dataset.d=d;e.dataset.s=s;e.classList.remove('chg');}
+function rd(id){const e=$(id);if(e.value===e.dataset.d)return +e.dataset.x;if(e.dataset.cur)return +e.value.replace(/[^0-9]/g,'')||0;return (+e.value||0)/(+e.dataset.s||1);}
 function gl(){return {ipc:rd('ipc'),senaModo:$('senaModo').value,senaNum:Math.round(rd('senaNum')),senaPct:rd('senaPct'),senaDesc:rd('senaDesc'),pracEst:rd('pracEst'),pracPer:Math.round(rd('pracPer'))};}
 function sc(){return {est:Math.max(1,Math.round(rd('est'))),desc:rd('desc'),vig:Math.max(1,Math.round(rd('vig')))};}
 function modoSENA(){const n=$('senaModo').value==='Número';$('senaNum').disabled=!n;$('senaPct').disabled=n;$('senaNum').title=n?'':'No aplica en modo Porcentaje';$('senaPct').title=n?'No aplica en modo Número':'';}function resetG(){setV('ipc',G.ipc,100,2);$('senaModo').value=G.senaModo;setV('senaNum',G.senaNum,1,0);setV('senaPct',G.senaPct,100,2);setV('senaDesc',G.senaDesc,100,2);setV('est',G.est,1,0);setV('desc',G.desc,100,2);setV('vig',G.vig,1,0);setV('pracEst',G.pracEst,1,0);setV('pracPer',G.pracPer,1,0);modoSENA();}
@@ -891,14 +891,14 @@ if(base&&Math.abs(r.E-cur.exc)>1)av+='<div class=\'warn r\'>⚠️ El resultado 
 if(!base)av+='<div class=warn>ℹ️ <b>Escenario simulado:</b> hay parámetros distintos a los del cierre oficial (campos en amarillo).</div>';
 $('aviso').innerHTML=av;
 const peOk=isFinite(r.pe)&&r.pe>0&&o.est>=r.pe;
-$('kpis').innerHTML=card('Ingreso total cohorte',MM(r.I),'Precio S1: '+COP(r.rows[0].precio))+card('Costo total cohorte',MM(r.C),'Fijo '+PCT(r.C?r.FI/r.C:0)+' · Variable '+PCT(r.C?r.CV/r.C:0))+card('Excedente total',MM(r.E),'Por estudiante inicial: '+COP(r.E/o.est),r.E<0?COL.r:COL.v)+card('Margen operativo',PCT(r.M),LAB[c]+' · cae '+((r.rows[0].pct-u.pct)*100).toFixed(1)+' pp al S'+u.k,COL[c])+card('Punto de equilibrio S1',FPE(r.pe)+' est.','Cohorte simulada: '+o.est+' est.',peOk?COL.v:COL.r)+card('Retención final',PCT(u.ret),Math.round(u.stu)+' estudiantes en S'+u.k);
+$('kpis').innerHTML=card('Ingreso total cohorte',MM(r.I),'Precio S1: '+COP(r.rows[0].precio))+card('Costo total cohorte',MM(r.C),'Fijo '+PCT(r.C?r.FI/r.C:0)+' · Variable '+PCT(r.C?r.CV/r.C:0))+card('Excedente total',MM(r.E),'Por estudiante inicial: '+COP(r.E/o.est),r.E<0?COL.r:COL.v)+card('Margen operativo',PCT(r.M),LAB[c]+' · cae '+N1((r.rows[0].pct-u.pct)*100)+' pp al S'+u.k,COL[c])+card('Punto de equilibrio S1',FPE(r.pe)+' est.','Cohorte simulada: '+o.est+' est.',peOk?COL.v:COL.r)+card('Retención final',PCT(u.ret),Math.round(u.stu)+' estudiantes en S'+u.k);
 let h='<thead><tr><th>Sem</th><th>Estudiantes</th><th>Retención</th><th>Precio / sem</th><th>Ingreso</th><th>Costo variable</th><th>Costo + gasto fijo</th><th>Prácticas</th><th>Costo total</th><th>Margen</th><th>Margen %</th><th>PE (est.)</th></tr></thead><tbody>';
 h+=r.rows.map(x=>'<tr><td><b>S'+x.k+'</b></td><td>'+Math.round(x.stu).toLocaleString('es-CO')+'</td><td>'+PCT(x.ret)+'</td><td>'+COP(x.precio)+'</td>'+TDM(x.ing)+TDM(x.cv)+TDM(x.fijo)+TDM(x.prac)+TDM(x.costo)+TDM(x.mg)+'<td>'+PILL(x.pct)+'</td><td>'+FPE(x.pe)+'</td></tr>').join('');
 h+='<tr class=tot><td>TOTAL</td><td></td><td></td><td></td>'+TDM(r.I)+TDM(r.CV)+TDM(r.FI)+TDM(r.PRA)+TDM(r.C)+TDM(r.E)+'<td>'+PILL(r.M)+'</td><td></td></tr></tbody>';
 $('tabla').innerHTML=h;
 if(!vis('vDet'))return;
 const L=r.rows.map(x=>'S'+x.k);
-draw('g1',{data:{labels:L,datasets:[{type:'line',label:'Margen %',data:r.rows.map(x=>x.pct*100),borderColor:AM,backgroundColor:r.rows.map(x=>COL[SC(x.pct)]),pointRadius:6,borderWidth:3,yAxisID:'y1'},{type:'bar',label:'Estudiantes',data:r.rows.map(x=>Math.round(x.stu)),backgroundColor:AZ,borderRadius:4,yAxisID:'y'}]},options:{plugins:{title:{display:true,text:'Estudiantes y margen % por semestre'},tooltip:TT((v,c)=>c.dataset.yAxisID==='y1'?v.toFixed(1)+'%':Math.round(v))},scales:{y:{title:{display:true,text:'Estudiantes'}},y1:{position:'right',title:{display:true,text:'Margen %'},grid:{drawOnChartArea:false}}}}});
+draw('g1',{data:{labels:L,datasets:[{type:'line',label:'Margen %',data:r.rows.map(x=>x.pct*100),borderColor:AM,backgroundColor:r.rows.map(x=>COL[SC(x.pct)]),pointRadius:6,borderWidth:3,yAxisID:'y1'},{type:'bar',label:'Estudiantes',data:r.rows.map(x=>Math.round(x.stu)),backgroundColor:AZ,borderRadius:4,yAxisID:'y'}]},options:{plugins:{title:{display:true,text:'Estudiantes y margen % por semestre'},tooltip:TT((v,c)=>c.dataset.yAxisID==='y1'?N1(v)+'%':Math.round(v))},scales:{y:{ticks:{precision:0},title:{display:true,text:'Estudiantes'}},y1:{position:'right',ticks:{callback:v=>v+'%'},title:{display:true,text:'Margen %'},grid:{drawOnChartArea:false}}}}});
 draw('g2',{data:{labels:L,datasets:[{type:'line',label:'Margen',data:r.rows.map(x=>x.mg),borderColor:AM,backgroundColor:AM,borderWidth:3,pointRadius:4},{type:'bar',label:'Ingreso',data:r.rows.map(x=>x.ing),backgroundColor:AZ,borderRadius:4},{type:'bar',label:'Costo total',data:r.rows.map(x=>x.costo),backgroundColor:GR,borderRadius:4}]},options:{plugins:{title:{display:true,text:'Ingreso, costo y margen por semestre'},tooltip:TT(v=>MM(v))},scales:{y:AXM}}});
 {const vals=[r.CV,r.FI,r.PRA],pc=v=>PCT(r.C?v/r.C:0);draw('g5',{type:'doughnut',data:{labels:['Costo variable','Costo + gasto fijo','Prácticas'].map((l,i)=>l+': '+MM(vals[i])+' ('+pc(vals[i])+')'),datasets:[{label:'Costo',data:vals,backgroundColor:[AZ2,AZ,AM],borderWidth:2}]},options:{cutout:'50%',plugins:{title:{display:true,text:'Composición del costo total'},legend:{position:'bottom',labels:{boxWidth:14,padding:10}},tooltip:TT(v=>MM(v)+' ('+pc(v)+')')}},plugins:[{id:'lbl',afterDatasetsDraw(c){const x=c.ctx,m=c.getDatasetMeta(0),ca=c.chartArea,cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;x.save();x.textAlign='center';x.textBaseline='middle';m.data.forEach((a,i)=>{const v=vals[i];if(!r.C||v/r.C<0.06)return;const p=a.tooltipPosition();x.fillStyle=i===2?AZ:'#fff';x.font='700 12px Montserrat,sans-serif';x.fillText(pc(v),p.x,p.y-7);x.font='600 10px Montserrat,sans-serif';x.fillText(MM(v),p.x,p.y+7);});x.fillStyle=AZ;x.font='600 11px Montserrat,sans-serif';x.fillText('Costo total',cx,cy-9);x.font='800 14px Montserrat,sans-serif';x.fillText(MM(r.C),cx,cy+9);x.restore();}}]});}
 }
@@ -917,7 +917,7 @@ $('rk').innerHTML=h;
 if(!vis('vRank'))return;
 const top=res.slice(0,15),lab={M:'Margen %',E:'Excedente',I:'Ingreso',pe:'Punto de equilibrio (est.)'}[met];
 const val=x=>met==='M'?x.r.M*100:met==='pe'?(isFinite(x.r.pe)?Math.ceil(x.r.pe):0):x.r[met];
-draw('g3',{type:'bar',data:{labels:top.map(x=>x.p.programa.slice(0,34)+' · '+x.p.cu.slice(0,20)),datasets:[{label:lab,data:top.map(val),backgroundColor:top.map(x=>COL[SC(x.r.M)]),borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},title:{display:true,text:'Primeros 15 programas según: '+lab},tooltip:TT(v=>met==='M'?v.toFixed(1)+'%':met==='pe'?Math.ceil(v)+' est.':MM(v))},scales:{x:met==='E'||met==='I'?AXM:{}}}});
+draw('g3',{type:'bar',data:{labels:top.map(x=>x.p.programa.slice(0,34)+' · '+x.p.cu.slice(0,20)),datasets:[{label:lab,data:top.map(val),backgroundColor:top.map(x=>COL[SC(x.r.M)]),borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},title:{display:true,text:'Primeros 15 programas según: '+lab},tooltip:TT(v=>met==='M'?N1(v)+'%':met==='pe'?Math.ceil(v)+' est.':MM(v))},scales:{x:met==='E'||met==='I'?AXM:met==='M'?{ticks:{callback:v=>v+'%'}}:{ticks:{precision:0}}}}});
 draw('g4',{type:'doughnut',data:{labels:['Saludable ≥45%','Aceptable 35–44%','En riesgo 20–34%','Crítico <20%'],datasets:[{data:[cnt.v,cnt.a,cnt.n,cnt.r],backgroundColor:[COL.v,COL.a,COL.n,COL.r],borderWidth:2}]},options:{cutout:'62%',plugins:{title:{display:true,text:'Programas por semáforo de margen'},legend:{position:'bottom'}}}});
 }
 const vis=id=>!$(id).classList.contains('hide');
@@ -935,7 +935,7 @@ Array.of('ipc','senaModo','senaNum','senaPct','senaDesc','est','desc','vig','pra
 Array.of('pre','subs','dur','d0','d1','d2','d3','d4','d5','d6','d7','d8').forEach(k=>$(k).oninput=render);
 Array.of('fNivel','fMod','fSede','fSem','fMet','fOrd').forEach(k=>$(k).onchange=renderRank);$('fBus').oninput=renderRank;
 $('resetG').onclick=()=>{resetG();refresh();};$('resetP').onclick=()=>{loadP(cur);render();};
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.t));$('senaModo').addEventListener('change',modoSENA);
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.t));$('senaModo').addEventListener('change',modoSENA);document.querySelectorAll('input[data-cur]').forEach(e=>e.addEventListener('blur',()=>{e.value=FMTC(+e.value.replace(/[^0-9]/g,'')||0);e.classList.toggle('chg',e.value!==e.dataset.d);}));
 $('rk').onclick=e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;selectProg(PR[+tr.dataset.i]);show('vDet');window.scrollTo(0,0);};
 const dp=DEF&&PR.find(p=>F.every((k,i)=>String(p[k])===DEF[i]));if(dp)selectProg(dp);else cascade(0);
 </script>
