@@ -8,8 +8,8 @@
 <link href='https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap' rel='stylesheet'>
 <script src='https://cdn.jsdelivr.net/npm/chart.js@4'></script>
 <style>
-/* Colores corporativos UNIMINUTO: cambiar aquí si el manual de marca indica otros códigos */
-:root{--azul:#002D72;--azul2:#0B4EA2;--azul3:#E8EEF8;--amarillo:#FFC72C;--amarillo2:#FFF4D6;--txt:#1C2633;--gris:#6B7785;--fondo:#F2F4F8;--linea:#E3E7EE;--verde:#2E9E5B;--ambar:#F2B705;--naranja:#E8772E;--rojo:#D0342C}
+/* Colores tomados del logo UNIMINUTO (azul #162644, amarillo #FECC00). Cambiar aquí si el manual de marca indica otros */
+:root{--azul:#162644;--azul2:#2B4677;--azul3:#E8EBF2;--amarillo:#FECC00;--amarillo2:#FFF7CC;--txt:#1C2633;--gris:#6B7785;--fondo:#F2F4F8;--linea:#E3E7EE;--verde:#2E9E5B;--ambar:#F2B705;--naranja:#E8772E;--rojo:#D0342C}
 *{box-sizing:border-box}
 body{font-family:Montserrat,Segoe UI,Arial,sans-serif;margin:0;background:var(--fondo);color:var(--txt);font-size:14px}
 header{background:linear-gradient(120deg,var(--azul) 0%,var(--azul2) 100%);color:#fff;border-bottom:6px solid var(--amarillo)}
@@ -27,7 +27,7 @@ label{font-size:11px;display:flex;flex-direction:column;gap:4px;font-weight:600;
 select,input{font-family:inherit;padding:8px 10px;border:1px solid #C9D1DC;border-radius:6px;font-size:13px;color:var(--txt);background:#fff;min-width:150px;max-width:340px}
 select:focus,input:focus{outline:2px solid var(--amarillo);border-color:var(--azul2)}
 input.chg{background:var(--amarillo2);border-color:var(--ambar);font-weight:700}input:disabled,select:disabled{background:#E9ECF1;color:#9AA5B1;cursor:not-allowed;border-style:dashed}
-.panel{background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,45,114,.08);margin-bottom:16px;border:1px solid var(--linea)}
+.panel{background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(22,38,68,.08);margin-bottom:16px;border:1px solid var(--linea)}
 summary{cursor:pointer;font-weight:700;color:var(--azul);font-size:14px;list-style:none;display:flex;align-items:center;gap:10px}
 summary::-webkit-details-marker{display:none}
 summary:before{content:'▸';color:var(--amarillo);font-size:16px}details[open] summary:before{content:'▾'}
@@ -39,27 +39,27 @@ fieldset input,fieldset select{min-width:90px;width:120px}
 .btn{background:var(--azul);border:none;color:#fff;border-radius:6px;padding:8px 14px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;margin-top:12px}
 .btn:hover{background:var(--azul2)}
 .tag{background:var(--amarillo);color:var(--azul);font-size:11px;padding:2px 10px;border-radius:10px;font-weight:700}
-.tabs{display:inline-flex;background:#fff;border-radius:10px;padding:4px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,45,114,.08);border:1px solid var(--linea)}
+.tabs{display:inline-flex;background:#fff;border-radius:10px;padding:4px;margin-bottom:16px;box-shadow:0 1px 4px rgba(22,38,68,.08);border:1px solid var(--linea)}
 .tab{padding:10px 22px;border:none;background:transparent;color:var(--azul);font-weight:700;cursor:pointer;border-radius:8px;font-size:14px;font-family:inherit}
 .tab.on{background:var(--azul);color:#fff;box-shadow:inset 0 -3px 0 var(--amarillo)}
 .hide{display:none!important}
-.phead{background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:16px;border-left:8px solid var(--azul);box-shadow:0 1px 4px rgba(0,45,114,.08);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.phead{background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:16px;border-left:8px solid var(--azul);box-shadow:0 1px 4px rgba(22,38,68,.08);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .pt{font-size:20px;font-weight:800;color:var(--azul)}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .chip{background:var(--azul3);color:var(--azul);padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
 .big{text-align:center;min-width:150px;padding:8px 18px;border-radius:10px;color:#fff}.big b{display:block;font-size:28px;font-weight:800}.big span{font-size:12px;font-weight:600}
-.card{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,45,114,.08);flex:1;min-width:190px;border:1px solid var(--linea);border-left:6px solid var(--azul)}
+.card{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(22,38,68,.08);flex:1;min-width:190px;border:1px solid var(--linea);border-left:6px solid var(--azul)}
 .card .t{font-size:11px;color:var(--gris);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
 .card .v{font-size:24px;font-weight:800;margin:6px 0 4px;color:var(--txt)}
 .card .s{font-size:12px;color:var(--gris)}
-.box{background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 4px rgba(0,45,114,.08);flex:1;min-width:330px;border:1px solid var(--linea)}
+.box{background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 4px rgba(22,38,68,.08);flex:1;min-width:330px;border:1px solid var(--linea)}
 .box.sm{flex:0 1 360px;min-width:300px}
 .sec{font-size:15px;font-weight:800;color:var(--azul);margin:6px 0 10px;display:flex;align-items:center;gap:8px}
 .sec:before{content:'';width:5px;height:18px;background:var(--amarillo);border-radius:3px}
-.tw{overflow:auto;max-height:660px;border-radius:10px;box-shadow:0 1px 4px rgba(0,45,114,.08);border:1px solid var(--linea)}
+.tw{overflow:auto;max-height:660px;border-radius:10px;box-shadow:0 1px 4px rgba(22,38,68,.08);border:1px solid var(--linea)}
 table{border-collapse:collapse;width:100%;background:#fff;font-size:13px}
 th{background:var(--azul);color:#fff;padding:9px 8px;font-weight:600;position:sticky;top:0;z-index:1;font-size:12px;white-space:nowrap}
-td{padding:8px;text-align:right;border-bottom:1px solid var(--linea);white-space:nowrap}#tabla th,#tabla td{text-align:center}.brand{flex-direction:column;align-items:flex-start;gap:6px}.logoimg{height:46px;width:auto;display:block;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+td{padding:8px;text-align:right;border-bottom:1px solid var(--linea);white-space:nowrap}#tabla th,#tabla td{text-align:center}.brand{flex-direction:column;align-items:flex-start;gap:6px}.logoimg{height:46px;width:auto;display:block;border-radius:0}
 td.l{text-align:left;white-space:normal}
 tbody tr:nth-child(even) td{background:#FAFBFD}
 tr.tot td{font-weight:800;background:var(--amarillo2)!important;border-top:2px solid var(--amarillo)}
@@ -844,7 +844,7 @@ const COL={v:'#2E9E5B',a:'#F2B705',n:'#E8772E',r:'#D0342C'},LAB={v:'Saludable',a
 const PILL=m=>'<span class=p'+SC(m)+'>'+PCT(m)+'</span>';
 const FPE=v=>isFinite(v)&&v>0?Math.ceil(v).toLocaleString('es-CO'):'N/A';
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-const AZ='#002D72',AZ2='#0B4EA2',AM='#FFC72C',GR='#9AA5B1';
+const AZ='#162644',AZ2='#2B4677',AM='#FECC00',GR='#9AA5B1';
 const F=['nivel','modalidad','sede','cu','programa','snies'];
 const ch={};let cur=null;
 if(window.Chart){Chart.defaults.font.family='Montserrat, Segoe UI, sans-serif';Chart.defaults.color='#4A5568';Chart.defaults.plugins.title.color=AZ;Chart.defaults.plugins.title.font={size:14,weight:'700'};}
