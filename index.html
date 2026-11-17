@@ -26,7 +26,7 @@ h1{margin:0;font-size:24px;font-weight:700}
 label{font-size:11px;display:flex;flex-direction:column;gap:4px;font-weight:600;color:var(--gris);text-transform:uppercase;letter-spacing:.3px}
 select,input{font-family:inherit;padding:8px 10px;border:1px solid #C9D1DC;border-radius:6px;font-size:13px;color:var(--txt);background:#fff;min-width:150px;max-width:340px}
 select:focus,input:focus{outline:2px solid var(--amarillo);border-color:var(--azul2)}
-input.chg{background:var(--amarillo2);border-color:var(--ambar);font-weight:700}
+input.chg{background:var(--amarillo2);border-color:var(--ambar);font-weight:700}input:disabled,select:disabled{background:#E9ECF1;color:#9AA5B1;cursor:not-allowed;border-style:dashed}
 .panel{background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,45,114,.08);margin-bottom:16px;border:1px solid var(--linea)}
 summary{cursor:pointer;font-weight:700;color:var(--azul);font-size:14px;list-style:none;display:flex;align-items:center;gap:10px}
 summary::-webkit-details-marker{display:none}
@@ -842,7 +842,7 @@ const PCT=v=>(v*100).toLocaleString('es-CO',{minimumFractionDigits:1,maximumFrac
 const SC=m=>m>=0.45?'v':m>=0.35?'a':m>=0.2?'n':'r';
 const COL={v:'#2E9E5B',a:'#F2B705',n:'#E8772E',r:'#D0342C'},LAB={v:'Saludable',a:'Aceptable',n:'En riesgo',r:'Crítico'};
 const PILL=m=>'<span class=p'+SC(m)+'>'+PCT(m)+'</span>';
-const FPE=v=>isFinite(v)&&v>0?v.toLocaleString('es-CO',{maximumFractionDigits:1}):'N/A';
+const FPE=v=>isFinite(v)&&v>0?Math.ceil(v).toLocaleString('es-CO'):'N/A';
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const AZ='#002D72',AZ2='#0B4EA2',AM='#FFC72C',GR='#9AA5B1';
 const F=['nivel','modalidad','sede','cu','programa','snies'];
@@ -867,9 +867,9 @@ return {rows:rows,I:I,C:C,E:I-C,M:I?(I-C)/I:0,CV:S('cv'),FI:S('fijo'),PRA:S('pra
 }
 function setV(id,val,s,dec){const e=$(id),f=Math.pow(10,dec),d=String(Math.round(val*s*f)/f);e.value=d;e.dataset.x=val;e.dataset.d=d;e.dataset.s=s;e.classList.remove('chg');}
 function rd(id){const e=$(id);return e.value===e.dataset.d?+e.dataset.x:(+e.value||0)/(+e.dataset.s||1);}
-function gl(){return {ipc:rd('ipc'),senaModo:$('senaModo').value,senaNum:rd('senaNum'),senaPct:rd('senaPct'),senaDesc:rd('senaDesc'),pracEst:rd('pracEst'),pracPer:Math.round(rd('pracPer'))};}
-function sc(){return {est:Math.max(1,rd('est')),desc:rd('desc'),vig:Math.max(1,Math.round(rd('vig')))};}
-function resetG(){setV('ipc',G.ipc,100,2);$('senaModo').value=G.senaModo;setV('senaNum',G.senaNum,1,0);setV('senaPct',G.senaPct,100,2);setV('senaDesc',G.senaDesc,100,2);setV('est',G.est,1,0);setV('desc',G.desc,100,2);setV('vig',G.vig,1,0);setV('pracEst',G.pracEst,1,0);setV('pracPer',G.pracPer,1,0);}
+function gl(){return {ipc:rd('ipc'),senaModo:$('senaModo').value,senaNum:Math.round(rd('senaNum')),senaPct:rd('senaPct'),senaDesc:rd('senaDesc'),pracEst:rd('pracEst'),pracPer:Math.round(rd('pracPer'))};}
+function sc(){return {est:Math.max(1,Math.round(rd('est'))),desc:rd('desc'),vig:Math.max(1,Math.round(rd('vig')))};}
+function modoSENA(){const n=$('senaModo').value==='Número';$('senaNum').disabled=!n;$('senaPct').disabled=n;$('senaNum').title=n?'':'No aplica en modo Porcentaje';$('senaPct').title=n?'No aplica en modo Número':'';}function resetG(){setV('ipc',G.ipc,100,2);$('senaModo').value=G.senaModo;setV('senaNum',G.senaNum,1,0);setV('senaPct',G.senaPct,100,2);setV('senaDesc',G.senaDesc,100,2);setV('est',G.est,1,0);setV('desc',G.desc,100,2);setV('vig',G.vig,1,0);setV('pracEst',G.pracEst,1,0);setV('pracPer',G.pracPer,1,0);modoSENA();}
 function loadP(p){cur=p;setV('pre',p.pre,1,0);setV('subs',p.sub,100,2);setV('dur',p.dur,1,0);for(let i=0;i<9;i++)setV('d'+i,p.des[i],100,2);}
 function prog(){return Object.assign({},cur,{pre:rd('pre'),sub:rd('subs'),dur:Math.min(10,Math.max(1,Math.round(rd('dur')))),des:[0,1,2,3,4,5,6,7,8].map(i=>rd('d'+i))});}
 function isBase(){return Array.from(document.querySelectorAll('input[data-d]')).every(e=>e.value===e.dataset.d)&&$('senaModo').value===G.senaModo;}
@@ -891,14 +891,14 @@ if(base&&Math.abs(r.E-cur.exc)>1)av+='<div class=\'warn r\'>⚠️ El resultado 
 if(!base)av+='<div class=warn>ℹ️ <b>Escenario simulado:</b> hay parámetros distintos a los del cierre oficial (campos en amarillo).</div>';
 $('aviso').innerHTML=av;
 const peOk=isFinite(r.pe)&&r.pe>0&&o.est>=r.pe;
-$('kpis').innerHTML=card('Ingreso total cohorte',MM(r.I),'Precio S1: '+COP(r.rows[0].precio))+card('Costo total cohorte',MM(r.C),'Fijo '+PCT(r.C?r.FI/r.C:0)+' · Variable '+PCT(r.C?r.CV/r.C:0))+card('Excedente total',MM(r.E),'Por estudiante inicial: '+COP(r.E/o.est),r.E<0?COL.r:COL.v)+card('Margen operativo',PCT(r.M),LAB[c]+' · cae '+((r.rows[0].pct-u.pct)*100).toFixed(1)+' pp al S'+u.k,COL[c])+card('Punto de equilibrio S1',FPE(r.pe)+' est.','Cohorte simulada: '+o.est+' est.',peOk?COL.v:COL.r)+card('Retención final',PCT(u.ret),u.stu.toFixed(1)+' estudiantes en S'+u.k);
+$('kpis').innerHTML=card('Ingreso total cohorte',MM(r.I),'Precio S1: '+COP(r.rows[0].precio))+card('Costo total cohorte',MM(r.C),'Fijo '+PCT(r.C?r.FI/r.C:0)+' · Variable '+PCT(r.C?r.CV/r.C:0))+card('Excedente total',MM(r.E),'Por estudiante inicial: '+COP(r.E/o.est),r.E<0?COL.r:COL.v)+card('Margen operativo',PCT(r.M),LAB[c]+' · cae '+((r.rows[0].pct-u.pct)*100).toFixed(1)+' pp al S'+u.k,COL[c])+card('Punto de equilibrio S1',FPE(r.pe)+' est.','Cohorte simulada: '+o.est+' est.',peOk?COL.v:COL.r)+card('Retención final',PCT(u.ret),Math.round(u.stu)+' estudiantes en S'+u.k);
 let h='<thead><tr><th>Sem</th><th>Estudiantes</th><th>Retención</th><th>Precio / sem</th><th>Ingreso</th><th>Costo variable</th><th>Costo + gasto fijo</th><th>Prácticas</th><th>Costo total</th><th>Margen</th><th>Margen %</th><th>PE (est.)</th></tr></thead><tbody>';
-h+=r.rows.map(x=>'<tr><td><b>S'+x.k+'</b></td><td>'+x.stu.toFixed(1)+'</td><td>'+PCT(x.ret)+'</td><td>'+COP(x.precio)+'</td>'+TDM(x.ing)+TDM(x.cv)+TDM(x.fijo)+TDM(x.prac)+TDM(x.costo)+TDM(x.mg)+'<td>'+PILL(x.pct)+'</td><td>'+FPE(x.pe)+'</td></tr>').join('');
+h+=r.rows.map(x=>'<tr><td><b>S'+x.k+'</b></td><td>'+Math.round(x.stu).toLocaleString('es-CO')+'</td><td>'+PCT(x.ret)+'</td><td>'+COP(x.precio)+'</td>'+TDM(x.ing)+TDM(x.cv)+TDM(x.fijo)+TDM(x.prac)+TDM(x.costo)+TDM(x.mg)+'<td>'+PILL(x.pct)+'</td><td>'+FPE(x.pe)+'</td></tr>').join('');
 h+='<tr class=tot><td>TOTAL</td><td></td><td></td><td></td>'+TDM(r.I)+TDM(r.CV)+TDM(r.FI)+TDM(r.PRA)+TDM(r.C)+TDM(r.E)+'<td>'+PILL(r.M)+'</td><td></td></tr></tbody>';
 $('tabla').innerHTML=h;
 if(!vis('vDet'))return;
 const L=r.rows.map(x=>'S'+x.k);
-draw('g1',{data:{labels:L,datasets:[{type:'line',label:'Margen %',data:r.rows.map(x=>x.pct*100),borderColor:AM,backgroundColor:r.rows.map(x=>COL[SC(x.pct)]),pointRadius:6,borderWidth:3,yAxisID:'y1'},{type:'bar',label:'Estudiantes',data:r.rows.map(x=>x.stu),backgroundColor:AZ,borderRadius:4,yAxisID:'y'}]},options:{plugins:{title:{display:true,text:'Estudiantes y margen % por semestre'},tooltip:TT((v,c)=>c.dataset.yAxisID==='y1'?v.toFixed(1)+'%':v.toFixed(1))},scales:{y:{title:{display:true,text:'Estudiantes'}},y1:{position:'right',title:{display:true,text:'Margen %'},grid:{drawOnChartArea:false}}}}});
+draw('g1',{data:{labels:L,datasets:[{type:'line',label:'Margen %',data:r.rows.map(x=>x.pct*100),borderColor:AM,backgroundColor:r.rows.map(x=>COL[SC(x.pct)]),pointRadius:6,borderWidth:3,yAxisID:'y1'},{type:'bar',label:'Estudiantes',data:r.rows.map(x=>Math.round(x.stu)),backgroundColor:AZ,borderRadius:4,yAxisID:'y'}]},options:{plugins:{title:{display:true,text:'Estudiantes y margen % por semestre'},tooltip:TT((v,c)=>c.dataset.yAxisID==='y1'?v.toFixed(1)+'%':Math.round(v))},scales:{y:{title:{display:true,text:'Estudiantes'}},y1:{position:'right',title:{display:true,text:'Margen %'},grid:{drawOnChartArea:false}}}}});
 draw('g2',{data:{labels:L,datasets:[{type:'line',label:'Margen',data:r.rows.map(x=>x.mg),borderColor:AM,backgroundColor:AM,borderWidth:3,pointRadius:4},{type:'bar',label:'Ingreso',data:r.rows.map(x=>x.ing),backgroundColor:AZ,borderRadius:4},{type:'bar',label:'Costo total',data:r.rows.map(x=>x.costo),backgroundColor:GR,borderRadius:4}]},options:{plugins:{title:{display:true,text:'Ingreso, costo y margen por semestre'},tooltip:TT(v=>MM(v))},scales:{y:AXM}}});
 draw('g5',{type:'doughnut',data:{labels:['Costo variable','Costo + gasto fijo','Prácticas'],datasets:[{data:[r.CV,r.FI,r.PRA],backgroundColor:[AZ2,AZ,AM],borderWidth:2}]},options:{cutout:'62%',plugins:{title:{display:true,text:'Composición del costo total'},legend:{position:'bottom'},tooltip:TT((v)=>MM(v)+' ('+PCT(r.C?v/r.C:0)+')')}}});
 }
@@ -916,8 +916,8 @@ h+=res.map((x,j)=>{const m=x.r.M,w=Math.max(0,Math.min(100,m*100/0.6));return '<
 $('rk').innerHTML=h;
 if(!vis('vRank'))return;
 const top=res.slice(0,15),lab={M:'Margen %',E:'Excedente',I:'Ingreso',pe:'Punto de equilibrio (est.)'}[met];
-const val=x=>met==='M'?x.r.M*100:met==='pe'?(isFinite(x.r.pe)?x.r.pe:0):x.r[met];
-draw('g3',{type:'bar',data:{labels:top.map(x=>x.p.programa.slice(0,34)+' · '+x.p.cu.slice(0,20)),datasets:[{label:lab,data:top.map(val),backgroundColor:top.map(x=>COL[SC(x.r.M)]),borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},title:{display:true,text:'Primeros 15 programas según: '+lab},tooltip:TT(v=>met==='M'?v.toFixed(1)+'%':met==='pe'?v.toFixed(1)+' est.':MM(v))},scales:{x:met==='E'||met==='I'?AXM:{}}}});
+const val=x=>met==='M'?x.r.M*100:met==='pe'?(isFinite(x.r.pe)?Math.ceil(x.r.pe):0):x.r[met];
+draw('g3',{type:'bar',data:{labels:top.map(x=>x.p.programa.slice(0,34)+' · '+x.p.cu.slice(0,20)),datasets:[{label:lab,data:top.map(val),backgroundColor:top.map(x=>COL[SC(x.r.M)]),borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},title:{display:true,text:'Primeros 15 programas según: '+lab},tooltip:TT(v=>met==='M'?v.toFixed(1)+'%':met==='pe'?Math.ceil(v)+' est.':MM(v))},scales:{x:met==='E'||met==='I'?AXM:{}}}});
 draw('g4',{type:'doughnut',data:{labels:['Saludable ≥45%','Aceptable 35–44%','En riesgo 20–34%','Crítico <20%'],datasets:[{data:[cnt.v,cnt.a,cnt.n,cnt.r],backgroundColor:[COL.v,COL.a,COL.n,COL.r],borderWidth:2}]},options:{cutout:'62%',plugins:{title:{display:true,text:'Programas por semáforo de margen'},legend:{position:'bottom'}}}});
 }
 const vis=id=>!$(id).classList.contains('hide');
@@ -935,7 +935,7 @@ Array.of('ipc','senaModo','senaNum','senaPct','senaDesc','est','desc','vig','pra
 Array.of('pre','subs','dur','d0','d1','d2','d3','d4','d5','d6','d7','d8').forEach(k=>$(k).oninput=render);
 Array.of('fNivel','fMod','fSede','fSem','fMet','fOrd').forEach(k=>$(k).onchange=renderRank);$('fBus').oninput=renderRank;
 $('resetG').onclick=()=>{resetG();refresh();};$('resetP').onclick=()=>{loadP(cur);render();};
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.t));
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.t));$('senaModo').addEventListener('change',modoSENA);
 $('rk').onclick=e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;selectProg(PR[+tr.dataset.i]);show('vDet');window.scrollTo(0,0);};
 cascade(0);
 </script>
