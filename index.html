@@ -111,7 +111,7 @@ footer{text-align:center;font-size:11px;color:var(--gris);padding:18px;border-to
 <div class='phead' id='phead'></div>
 <details class='panel'><summary>🎓 Ajustar supuestos del programa</summary><div class='grp'>
 <fieldset><legend>Precio y duración</legend><label>Precio MEN / sem (COP)<input id='pre' type='text' inputmode='numeric' data-cur='1' placeholder='$ 0'></label>
-<label>% Subsidio<input id='subs' type='number' min='0' max='100' step='0.1'></label><label>Duración (sem, máx. 10)<input id='dur' type='number' min='1' max='10' step='1'></label></fieldset>
+<label>% Subsidio<input id='subs' type='number' min='0' max='100' step='0.1'></label><label>Precio subsidiado / sem (COP)<input id='psub' type='text' inputmode='numeric' data-cur='1' placeholder='$ 0' title='Por defecto: Precio MEN × (1 − % subsidio). Si lo modificas, el % de subsidio se recalcula.'></label><label>Duración (sem, máx. 10)<input id='dur' type='number' min='1' max='10' step='1'></label></fieldset>
 <fieldset class='des' id='desBox'><legend>Deserción por periodo %</legend></fieldset>
 </div><button id='resetP' class='btn'>↺ Restablecer valores del programa</button></details>
 <div id='aviso'></div>
@@ -870,8 +870,8 @@ function rd(id){const e=$(id);if(e.value===e.dataset.d)return +e.dataset.x;if(e.
 function gl(){return {ipc:rd('ipc'),senaModo:$('senaModo').value,senaNum:Math.round(rd('senaNum')),senaPct:rd('senaPct'),senaDesc:rd('senaDesc'),pracEst:rd('pracEst'),pracPer:Math.round(rd('pracPer'))};}
 function sc(){return {est:Math.max(1,Math.round(rd('est'))),desc:rd('desc'),vig:Math.max(1,Math.round(rd('vig')))};}
 function modoSENA(){const n=$('senaModo').value==='Número';$('senaNum').disabled=!n;$('senaPct').disabled=n;$('senaNum').title=n?'':'No aplica en modo Porcentaje';$('senaPct').title=n?'No aplica en modo Número':'';}function resetG(){setV('ipc',G.ipc,100,2);$('senaModo').value=G.senaModo;setV('senaNum',G.senaNum,1,0);setV('senaPct',G.senaPct,100,2);setV('senaDesc',G.senaDesc,100,2);setV('est',G.est,1,0);setV('desc',G.desc,100,2);setV('vig',G.vig,1,0);setV('pracEst',G.pracEst,1,0);setV('pracPer',G.pracPer,1,0);modoSENA();}
-function loadP(p){cur=p;setV('pre',p.pre,1,0);setV('subs',p.sub,100,2);setV('dur',p.dur,1,0);for(let i=0;i<9;i++)setV('d'+i,p.des[i],100,2);}
-function prog(){return Object.assign({},cur,{pre:rd('pre'),sub:rd('subs'),dur:Math.min(10,Math.max(1,Math.round(rd('dur')))),des:[0,1,2,3,4,5,6,7,8].map(i=>rd('d'+i))});}
+function loadP(p){cur=p;setV('pre',p.pre,1,0);setV('subs',p.sub,100,2);setV('psub',p.pre*(1-p.sub),1,0);setV('dur',p.dur,1,0);for(let i=0;i<9;i++)setV('d'+i,p.des[i],100,2);}function syncPsub(){const e=$('psub'),x=rd('pre')*(1-rd('subs'));e.dataset.x2=x;e.value=FMTC(x);e.classList.toggle('chg',e.value!==e.dataset.d);}function syncSub(){const e=$('subs'),pre=rd('pre'),ps=rd('psub');const s=pre>0?1-ps/pre:0;e.value=String(Math.round(s*10000)/100);e.classList.toggle('chg',e.value!==e.dataset.d);}function psubVal(){const e=$('psub');if(e.value===e.dataset.d)return +e.dataset.x;return +e.value.replace(/[^0-9]/g,'')||0;}
+function prog(){const pre=rd('pre'),ps=psubVal();return Object.assign({},cur,{pre:pre>0?pre:ps,sub:pre>0?1-ps/pre:0,dur:Math.min(10,Math.max(1,Math.round(rd('dur')))),des:[0,1,2,3,4,5,6,7,8].map(i=>rd('d'+i))});}
 function isBase(){return Array.from(document.querySelectorAll('input[data-d]')).every(e=>e.value===e.dataset.d)&&$('senaModo').value===G.senaModo;}
 function draw(id,cfg){if(!window.Chart)return;if(ch[id])ch[id].destroy();ch[id]=new Chart($(id),cfg);}
 function card(t,v,s,c){return '<div class=card style=border-left-color:'+(c||AZ)+'><div class=t>'+t+'</div><div class=v'+(c&&c!==AZ?' style=color:'+c:'')+'>'+v+'</div><div class=s>'+s+'</div></div>';}
@@ -932,7 +932,7 @@ opts($('fNivel'),PR.map(p=>p.nivel),true);opts($('fMod'),PR.map(p=>p.modalidad),
 document.addEventListener('input',e=>{const t=e.target;if(t.dataset&&t.dataset.d!==undefined)t.classList.toggle('chg',t.value!==t.dataset.d);});
 F.forEach((k,i)=>$(k).onchange=()=>cascade(i+1));
 Array.of('ipc','senaModo','senaNum','senaPct','senaDesc','est','desc','vig','pracEst','pracPer').forEach(k=>{$(k).oninput=refresh;$(k).onchange=refresh;});
-Array.of('pre','subs','dur','d0','d1','d2','d3','d4','d5','d6','d7','d8').forEach(k=>$(k).oninput=render);
+Array.of('dur','d0','d1','d2','d3','d4','d5','d6','d7','d8').forEach(k=>$(k).oninput=render);Array.of('pre','subs').forEach(k=>$(k).oninput=()=>{syncPsub();render();});$('psub').oninput=()=>{syncSub();render();};$('pre').addEventListener('blur',()=>{syncPsub();render();});$('psub').addEventListener('blur',()=>{syncSub();render();});
 Array.of('fNivel','fMod','fSede','fSem','fMet','fOrd').forEach(k=>$(k).onchange=renderRank);$('fBus').oninput=renderRank;
 $('resetG').onclick=()=>{resetG();refresh();};$('resetP').onclick=()=>{loadP(cur);render();};
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.t));$('senaModo').addEventListener('change',modoSENA);document.querySelectorAll('input[data-cur]').forEach(e=>e.addEventListener('blur',()=>{e.value=FMTC(+e.value.replace(/[^0-9]/g,'')||0);e.classList.toggle('chg',e.value!==e.dataset.d);}));
